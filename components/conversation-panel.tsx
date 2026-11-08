@@ -79,7 +79,7 @@ export function ConversationPanel({
       )}
       {!demoActive && missing.length > 0 && (
         <p className="border-b border-line bg-danger-soft px-4 py-2.5 text-xs text-danger">
-          <strong>Configuration required.</strong> Add {missing.join(" and ")} to .env.local for live voice. Recording
+          <strong>Configuration required.</strong> Add {missing.join(" and ")} to .env.local, or to the Environment Variables of your hosting project (e.g. Vercel), for live voice. Recording
           still works, but it stops at the first service without a key.
         </p>
       )}
