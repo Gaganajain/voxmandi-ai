@@ -3,12 +3,14 @@ import { z } from "zod";
 import { ServiceError } from "@/lib/errors";
 import { getLanguage } from "@/lib/languages";
 import { getTranslationProvider } from "@/lib/translation/translate";
+import { normalizeUnit } from "@/lib/cart/cart";
+import type { CartSignal } from "@/lib/types/cart";
 import type { SummaryItem } from "@/lib/types/conversation";
 import type { SummaryRequest } from "@/lib/validation/schemas";
 
 const SYSTEM = `You read a conversation between a customer and a street vendor at an Indian market and list the market facts that were explicitly said. Each turn has the original words and a machine translation.
 
-Return JSON: {"items": [{"turn": number, "product": string, "quantity": string | null, "price": string | null, "quote": string, "uncertain": boolean, "note": string | null}]}
+Return JSON: {"items": [{"turn": number, "product": string, "quantity": string | null, "price": string | null, "quote": string, "uncertain": boolean, "note": string | null, "action": string, "qty": number | null, "unit": string | null, "rupees": number | null, "per_qty": number | null, "per_unit": string | null, "variant": string | null}]}
 
 Rules:
 - One item per product per turn where a product, quantity or price is mentioned.
@@ -18,7 +20,23 @@ Rules:
 - "quote": copy the exact words from that turn's original or translation that contain the fact.
 - "uncertain": true if the original and translation disagree, if speech recognition may have misheard, or if anything is ambiguous; explain in "note".
 - Never invent products, quantities, prices, totals or purchases. Do not compute a bill. Do not say anything was bought.
-- If nothing qualifies, return {"items": []}.`;
+- If nothing qualifies, return {"items": []}.
+
+Shopping-cart fields (used to build the customer's cart; report only what this turn says):
+- "product": use the same singular English name for the same product in every turn (e.g. always "tomato"). If the turn says "it", "that" or "one kilogram costs 40" without naming the product, use the product it clearly refers to from earlier turns; if that is not clear, set "uncertain": true.
+- "action", one of:
+  - "add": the customer asks to buy a product, e.g. "I need 2 kg tomatoes", "give me onions too".
+  - "add_more": the customer explicitly wants more of a product already asked for, e.g. "one more kilo of tomatoes".
+  - "set_quantity": the customer explicitly changes an earlier amount, e.g. "actually make that 3 kg", "no, only 1 kg".
+  - "remove": the customer cancels a product, e.g. "I don't want onions".
+  - "price": the vendor states or corrects a price.
+  - "other": questions ("how much are tomatoes?"), bargaining offers that were not accepted, and anything else.
+- "qty" and "unit": the customer's amount as a number and one of "kg", "g", "l", "ml", "piece", "dozen", exactly as said, never converted ("half a kilo" is 0.5 kg; "6 bananas" is 6 piece). null if not said. Keep "unit" null if the unit is not clear.
+- "rupees", "per_qty", "per_unit": the vendor's price and the amount it is for, as said: "40 per kg" is 40, 1, "kg"; "60 for 2 kg" is 60, 2, "kg"; "10 each" is 10, 1, "piece". null if not said. Keep "per_unit" null if it is not clear what the price covers.
+- "variant": a variety that distinguishes the product, e.g. "red", "small", "Nashik", else null.
+- Write numbers said in words as digits in these fields, and set "uncertain": true when the action is ambiguous.`;
+
+const positive = z.number().finite().positive().max(100_000).nullable().optional().catch(null);
 
 const modelOutput = z.object({
   items: z.array(
@@ -30,6 +48,13 @@ const modelOutput = z.object({
       quote: z.string().trim().max(400),
       uncertain: z.boolean().catch(true),
       note: z.string().trim().max(200).nullable().optional().catch(null),
+      action: z.enum(["add", "add_more", "set_quantity", "remove", "price", "other"]).catch("other"),
+      qty: positive,
+      unit: z.unknown().transform(normalizeUnit),
+      rupees: z.number().finite().nonnegative().max(10_000_000).nullable().optional().catch(null),
+      per_qty: positive,
+      per_unit: z.unknown().transform(normalizeUnit),
+      variant: z.string().trim().max(60).nullable().optional().catch(null),
     }),
   ).max(50),
 });
@@ -48,6 +73,16 @@ function asciiDigits(text: string) {
 const forMatching = (s: string) =>
   asciiDigits(s).replace(/[।॥.,!?;:"'“”‘’()]/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
 const numbersIn = (s: string) => asciiDigits(s).match(/\d+(?:\.\d+)?/g) ?? [];
+
+/** The cart fields of one model item. Numbers are verified against the turn text by the caller. */
+function cartSignal(item: z.infer<typeof modelOutput>["items"][number]): CartSignal {
+  return {
+    action: item.action,
+    quantity: item.qty != null ? { value: item.qty, unit: item.unit } : null,
+    price: item.rupees != null ? { amount: item.rupees, forValue: item.per_qty ?? 1, unit: item.per_unit } : null,
+    variant: item.variant || null,
+  };
+}
 
 /**
  * Extracts products, quantities and prices with the configured LLM, then checks
@@ -87,9 +122,13 @@ export async function summarise({ turns }: SummaryRequest, signal?: AbortSignal)
     if (!quote || !forMatching(turnText).includes(quote)) continue;
 
     const turnNumbers = new Set(numbersIn(turnText));
-    const unverified = [item.quantity, item.price].some(
-      (value) => value !== null && (numbersIn(value).length === 0 || numbersIn(value).some((n) => !turnNumbers.has(n))),
-    );
+    const cart = cartSignal(item);
+    // A per-quantity of 1 ("per kg") is usually not said as a digit.
+    const cartNumbers = [cart.quantity?.value, cart.price?.amount, cart.price && cart.price.forValue !== 1 ? cart.price.forValue : undefined];
+    const unverified =
+      [item.quantity, item.price].some(
+        (value) => value !== null && (numbersIn(value).length === 0 || numbersIn(value).some((n) => !turnNumbers.has(n))),
+      ) || cartNumbers.some((n) => n !== undefined && !turnNumbers.has(String(n)));
 
     const notes = [item.note, unverified ? "Number not written as digits in the conversation; check by ear" : null].filter(Boolean);
     items.push({
@@ -100,6 +139,8 @@ export async function summarise({ turns }: SummaryRequest, signal?: AbortSignal)
       quote: item.quote,
       uncertain: item.uncertain || unverified,
       note: notes.length ? notes.join(". ") : undefined,
+      turn: item.turn,
+      cart,
     });
   }
   return items;

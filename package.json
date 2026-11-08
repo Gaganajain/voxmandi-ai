@@ -9,7 +9,8 @@
     "start": "next start --hostname localhost",
     "phone": "next build && next start --hostname 0.0.0.0",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/cart.test.mjs"
   },
   "dependencies": {
     "next": "^16.4.5",

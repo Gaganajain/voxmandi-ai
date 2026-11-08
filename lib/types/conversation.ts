@@ -1,4 +1,5 @@
 import type { LanguageCode } from "@/lib/languages";
+import type { CartSignal } from "@/lib/types/cart";
 
 export type Role = "customer" | "vendor";
 export type Stage = "stt" | "translate" | "tts";
@@ -68,6 +69,10 @@ export interface SummaryItem {
   uncertain: boolean;
   /** Why it is uncertain, when it is. */
   note?: string;
+  /** 1-based index of the turn in the request this came from. */
+  turn: number;
+  /** Structured fields for the shopping cart; the cart itself is computed in the browser. */
+  cart: CartSignal;
 }
 
 export type SummaryResponse = { items: SummaryItem[] } | { error: PublicError };

@@ -63,9 +63,17 @@ Put these in `.env.local` (ignored by Git). Next.js picks up changes automatical
 - `app/api/translate/route.ts`: streams each pipeline result to the browser as it is ready
 - `lib/phrases.ts` and `app/api/phrase/route.ts`: starter phrases, translated by the live provider; audio reuses `/api/translate`
 - `lib/summary.ts` and `app/api/summary/route.ts`: market notes; items whose quote is not in the conversation are dropped and unverifiable numbers are marked uncertain
+- `lib/cart/cart.ts`: the shopping cart. The same `/api/summary` request that makes market notes also reports, per turn, what the customer asked to add, change or remove and the prices the vendor gave; this file turns that into cart items and does every match, unit conversion and total deterministically (`npm test` runs its tests)
+- `lib/cart/purchase-storage.ts`: confirmed purchases, saved in this browser's localStorage
 - `lib/gnani/`: speech-to-text and text-to-speech clients
 - `lib/translation/`: provider interface, a shared OpenAI-compatible client, and the Groq and Cerebras providers; register new providers in `translate.ts`
 - `lib/audio/recording.ts`: microphone capture and conversion to the WAV format Gnani accepts
+
+## Shopping cart and purchase history
+
+The cart fills in as the customer asks for products and the vendor gives prices; items can also be edited, removed or added by hand. Item totals and the grand total only appear when the quantity and price are known and in compatible units (kg/g, litre/ml, dozen/piece); anything missing or unclear is marked, and the customer is asked when a repeated product could mean "more" or "instead". Nothing is saved until the customer reviews the cart and taps **Confirm purchase**. VoxMandi AI never takes or records payment.
+
+Purchase history is stored in the browser's localStorage. It stays on that one device and browser, is not backed up, and is lost if the browser's site data is cleared. The active cart is not stored, so it is cleared with the conversation or when the page reloads.
 
 ## Limits
 

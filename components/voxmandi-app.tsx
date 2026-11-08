@@ -10,12 +10,13 @@ import { AppHeader } from "./app-header";
 import { ConversationPanel } from "./conversation-panel";
 import { Hero } from "./hero";
 import { LanguagePairBar } from "./language-selector";
+import { MarketSession } from "./market-session";
 import { MicAccessNotice } from "./mic-access-notice";
 import { MicrophonePanel } from "./microphone-button";
 import { PhrasePanel } from "./phrase-panel";
+import { PurchaseHistory } from "./purchase-history";
 import { SiteFooter } from "./site-footer";
 import { deriveMode } from "./status-indicator";
-import { SummaryPanel } from "./summary-panel";
 
 export function VoxMandiApp() {
   const [customerLang, setCustomerLang] = useState<LanguageCode>("kn-IN");
@@ -168,7 +169,8 @@ export function VoxMandiApp() {
               playback={conversation.playback}
               onToggleAudio={conversation.toggle}
             />
-            <SummaryPanel key={epoch} turns={turns} demoActive={demoActive} busy={conversation.busy} />
+            <MarketSession key={epoch} turns={turns} demoActive={demoActive} busy={conversation.busy} />
+            <PurchaseHistory />
           </div>
 
           {/* Phones: a dock fixed to the bottom. Desktop: dissolves so each mic is a side column. */}
