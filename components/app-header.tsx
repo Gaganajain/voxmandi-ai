@@ -23,13 +23,13 @@ export function AppHeader({
   return (
     <header className="sticky top-0 z-30 border-b border-line/70 bg-canvas/85 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-2.5 sm:px-4">
-        <a href="#" className="flex min-w-0 shrink-0 items-center gap-2" aria-label="BazaarBuddy AI home">
+        <a href="#" className="flex min-w-0 shrink-0 items-center gap-2" aria-label="MarketMitra AI home">
           <LogoMark className="size-7 shrink-0 sm:size-9" />
           <span className="min-w-0">
             <span className="block font-display text-[0.95rem] leading-tight font-extrabold tracking-tight whitespace-nowrap sm:text-lg">
-              BazaarBuddy <span className="text-accent">AI</span>
+              MarketMitra <span className="text-accent">AI</span>
             </span>
-            <span className="hidden text-xs text-muted sm:block">Your market. Your language.</span>
+            <span className="hidden text-xs text-muted sm:block">Your voice. Your market. Your connection.</span>
           </span>
         </a>
         <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">

@@ -1,4 +1,4 @@
-/** BazaarBuddy AI mark: two speech bubbles, one per side of the conversation. */
+/** MarketMitra AI mark: two speech bubbles, one per side of the conversation. */
 export function LogoMark({ className = "size-9" }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
@@ -22,7 +22,7 @@ export function LogoMark({ className = "size-9" }: { className?: string }) {
 export function Wordmark() {
   return (
     <span className="font-display text-lg font-extrabold tracking-tight sm:text-xl">
-      BazaarBuddy <span className="text-accent">AI</span>
+      MarketMitra <span className="text-accent">AI</span>
     </span>
   );
 }

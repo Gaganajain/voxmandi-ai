@@ -6,7 +6,7 @@ export function SiteFooter({ translationProvider }: { translationProvider?: stri
       <span className="flex items-center gap-2">
         <LogoMark className="size-5" />
         <span>
-          <span className="font-semibold text-text">BazaarBuddy AI</span> · Your market. Your language.
+          <span className="font-semibold text-text">MarketMitra AI</span> · Your voice. Your market. Your connection.
         </span>
       </span>
       <span>

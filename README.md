@@ -1,6 +1,6 @@
-# BazaarBuddy AI
+# MarketMitra AI
 
-**Your market. Your language.** Talk naturally. Understand instantly. Shop confidently.
+**Talk. Translate. Trade.** Your voice. Your market. Your connection.
 
 Voice-first translation for Indian street markets. A customer and a vendor each speak their own language and hear the other in theirs. "Market notes" lists the products, quantities and prices mentioned, checked against the conversation text. "Market phrases" offers starter phrases, translated live and playable, without adding them to the conversation.
 

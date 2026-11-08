@@ -7,9 +7,10 @@ const kannada = Noto_Sans_Kannada({ subsets: ["kannada"], variable: "--nf-kannad
 const devanagari = Noto_Sans_Devanagari({ subsets: ["devanagari"], variable: "--nf-devanagari", preload: false });
 
 export const metadata: Metadata = {
-  title: "BazaarBuddy AI · Your market. Your language.",
-  description: "Talk naturally. Understand instantly. Shop confidently. Voice translation between customers and vendors in Indian markets.",
-  applicationName: "BazaarBuddy AI",
+  title: "MarketMitra AI · Talk. Translate. Trade.",
+  description:
+    "Your voice. Your market. Your connection. Voice translation between customers and vendors in Indian markets.",
+  applicationName: "MarketMitra AI",
   icons: { icon: "/icon.svg" },
 };
 
