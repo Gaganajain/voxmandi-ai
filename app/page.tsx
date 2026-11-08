@@ -1,5 +1,5 @@
-import { BazaarApp } from "@/components/bazaar-app";
+import { MarketMitraApp } from "@/components/marketmitra-app";
 
 export default function Home() {
-  return <BazaarApp />;
+  return <MarketMitraApp />;
 }
