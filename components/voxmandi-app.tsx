@@ -17,7 +17,7 @@ import { SiteFooter } from "./site-footer";
 import { deriveMode } from "./status-indicator";
 import { SummaryPanel } from "./summary-panel";
 
-export function MarketMitraApp() {
+export function VoxMandiApp() {
   const [customerLang, setCustomerLang] = useState<LanguageCode>("kn-IN");
   const [vendorLang, setVendorLang] = useState<LanguageCode>("hi-IN");
   const [health, setHealth] = useState<HealthResponse | null>(null);

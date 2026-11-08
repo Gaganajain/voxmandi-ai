@@ -7,10 +7,21 @@ const kannada = Noto_Sans_Kannada({ subsets: ["kannada"], variable: "--nf-kannad
 const devanagari = Noto_Sans_Devanagari({ subsets: ["devanagari"], variable: "--nf-devanagari", preload: false });
 
 export const metadata: Metadata = {
-  title: "MarketMitra AI · Talk. Translate. Trade.",
-  description:
-    "Your voice. Your market. Your connection. Voice translation between customers and vendors in Indian markets.",
-  applicationName: "MarketMitra AI",
+  title: "VoxMandi AI · Talk. Translate. Trade.",
+  description: "Breaking language barriers in local markets through real-time voice translation.",
+  applicationName: "VoxMandi AI",
+  openGraph: {
+    type: "website",
+    siteName: "VoxMandi AI",
+    locale: "en_IN",
+    title: "VoxMandi AI · Talk. Translate. Trade.",
+    description: "Every voice finds its language. Breaking language barriers in local markets through real-time voice translation.",
+  },
+  twitter: {
+    card: "summary",
+    title: "VoxMandi AI · Talk. Translate. Trade.",
+    description: "Every voice finds its language. Breaking language barriers in local markets through real-time voice translation.",
+  },
   icons: { icon: "/icon.svg" },
 };
 

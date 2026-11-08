@@ -1,5 +1,5 @@
-import { MarketMitraApp } from "@/components/marketmitra-app";
+import { VoxMandiApp } from "@/components/voxmandi-app";
 
 export default function Home() {
-  return <MarketMitraApp />;
+  return <VoxMandiApp />;
 }
