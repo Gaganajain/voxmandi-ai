@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+npm-debug.log*
+.DS_Store
+
+# Secrets: every env file stays out of Git except the blank template
+.env*
+!.env.example
