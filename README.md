@@ -1,80 +1,165 @@
+<div align="center">
+
+<img src="public/icon.svg" width="88" alt="VoxMandi AI logo" />
+
 # VoxMandi AI
 
-**Talk. Translate. Trade.** Every voice finds its language.
+### Talk. Translate. Trade.
 
-Breaking language barriers in local markets through real-time voice translation.
+**Every voice finds its language.** Real-time voice translation that lets a customer and a street vendor bargain, each in their own language.
 
-Voice-first translation for Indian street markets. A customer and a vendor each speak their own language and hear the other in theirs. "Market notes" lists the products, quantities and prices mentioned, checked against the conversation text. "Market phrases" offers starter phrases, translated live and playable, without adding them to the conversation.
+[![Live demo](https://img.shields.io/badge/Live%20demo-voxmandi--ai.vercel.app-2ea44f?style=for-the-badge&logo=vercel&logoColor=white)](https://voxmandi-ai.vercel.app/)
 
-**Flow:** microphone → Gnani speech-to-text → Groq translation (Cerebras also supported) → Gnani text-to-speech → playback.
+![Powered by Gnani AI](https://img.shields.io/badge/Voice-Gnani%20AI-6c3bff)
+![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![React 19](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)
+![Tailwind CSS 4](https://img.shields.io/badge/Tailwind-4-38bdf8?logo=tailwindcss&logoColor=white)
+![Languages](https://img.shields.io/badge/Indian%20languages-10-ff9933)
 
-## Run it
+</div>
+
+---
+
+## The problem
+
+India has 22 official languages, and markets are where they meet. A Kannada-speaking shopper in Bengaluru buys vegetables from a vendor who grew up speaking Hindi, a tourist in Chennai haggles over silk in English, and a migrant worker in Pune just wants to know the price of rice. People get by with gestures, half-understood numbers and overcharging. Text translation apps don't help much here: vendors are busy with their hands, many people don't read the script, and nobody types mid-bargain.
+
+## What VoxMandi does
+
+VoxMandi turns one phone into an interpreter that sits between both people.
+
+1. **Customer taps and speaks** in their language, for example *"ಒಂದು ಕೆಜಿ ಟೊಮೆಟೊ ಎಷ್ಟು?"*
+2. **Vendor hears it in theirs:** *"एक किलो टमाटर कितने का है?"* (spoken aloud by Gnani TTS)
+3. **Vendor replies by voice**, and the customer hears the answer in Kannada.
+4. While they talk, VoxMandi **builds the bill on its own**: items, quantities, unit prices and a total, checked against what was actually said.
+
+No typing and no reading needed. Both people just talk.
+
+## Features
+
+| | |
+| --- | --- |
+| 🎙️ **Two-way voice translation** | Separate mics for customer and vendor. Speech to text, translation and text to speech, streamed back as each step finishes. |
+| 🇮🇳 **10 Indian languages** | Kannada, Hindi, Tamil, Telugu, Malayalam, Marathi, Bengali, Gujarati, Punjabi and English, in any pairing. |
+| 🧾 **Smart shopping cart** | Picks up "add 2 kg onions", "make that 1 kg" and "remove the beans" from the conversation. Unit conversion (kg/g, L/ml, dozen/piece) and totals are deterministic code, not LLM guesses. |
+| 🛡️ **Anti-hallucination checks** | Each extracted item must quote the conversation. Items whose quote isn't found are dropped, and numbers that can't be verified are flagged as uncertain. |
+| 📝 **Market notes** | A live summary of products, quantities and prices mentioned so far. |
+| 💬 **Market phrases** | One-tap starters like "How much does this cost?" or "Can you reduce the price?", translated live and playable without being added to the conversation. |
+| 🧑‍🤝‍🧑 **Purchase history** | Confirmed purchases are kept on the device. VoxMandi never touches payments. |
+| 📱 **Mobile-first** | Built for a phone held between two people at a stall, with a live API status indicator and a no-key demo mode. |
+
+## How it works
+
+```mermaid
+flowchart LR
+    A["🎙️ Speaker<br/>(customer or vendor)"] -->|WAV audio| B["Gnani Prisma STT<br/>speech → text"]
+    B --> C["LLM translation<br/>Groq · Cerebras"]
+    C --> D["Gnani Timbre TTS<br/>text → speech"]
+    D -->|streamed| E["🔊 Listener hears<br/>their language"]
+    C --> F["Summary + cart engine<br/>verified against transcript"]
+    F --> G["🧾 Live bill"]
+```
+
+- **Speech:** [Gnani AI](https://gnani.ai): Prisma v2.5 speech-to-text and Timbre v2.5 text-to-speech, both built for Indian languages and accents.
+- **Translation:** Groq (`openai/gpt-oss-120b` by default) behind a provider interface. Cerebras is a drop-in alternative.
+- **Streaming:** `/api/translate` sends each pipeline stage (transcript, translation, audio) to the browser as soon as it's ready, so people hear the reply sooner.
+- **Hosting:** Vercel serverless functions pinned to Mumbai (`bom1`) to cut round-trip time for Indian users.
+
+## Tech stack
+
+- **Framework:** Next.js 16 (App Router, Route Handlers), React 19, TypeScript
+- **Styling:** Tailwind CSS 4
+- **Validation:** Zod schemas on every API boundary
+- **AI:** Gnani STT/TTS · Groq / Cerebras (OpenAI-compatible)
+- **Audio:** in-browser microphone capture converted to the WAV format Gnani accepts
+- **Tests:** Node's built-in test runner for the cart engine (`npm test`)
+
+## Project structure
 
 ```
+app/
+  api/translate/   streams the speech → translation → speech pipeline
+  api/summary/     market notes + per-turn cart intents
+  api/phrase/      starter phrases, translated live
+  api/health/      provider status for the header indicator
+components/        UI: market session, mic buttons, cart, history, phrases
+lib/
+  pipeline.ts      the shared voice pipeline used by both speakers
+  gnani/           Gnani STT and TTS clients
+  translation/     provider interface + Groq and Cerebras implementations
+  cart/            deterministic cart math and local purchase storage
+  summary.ts       transcript-grounded extraction with quote verification
+  audio/           microphone recording and WAV conversion
+tests/             cart engine tests
+```
+
+## Run it locally
+
+```bash
+git clone https://github.com/Gaganajain/voxmandi-ai.git
+cd voxmandi-ai
 npm install
+cp .env.example .env.local   # then add your keys
 npm run dev
 ```
 
-Open http://localhost:3000. `npm run dev` only listens on this laptop.
-
-## Use it on your phone
-
-The phone opens the app from your laptop over Wi-Fi. Nothing is published to the internet; the API keys stay on the laptop.
-
-1. **Same network.** Connect the laptop and phone to the same Wi-Fi. At a market with no Wi-Fi, turn on the phone's mobile hotspot and connect the laptop to it (the laptop then reaches Gnani and Groq through the phone's data).
-2. **Find the laptop's address.** On the laptop, run `ipconfig` in a terminal. Under the adapter you are connected with (Wi-Fi), copy the **IPv4 Address**, e.g. `192.168.x.x`.
-3. **Start the server for the network.** Stop any running dev server (Ctrl+C), then run one of:
-   - `npm run phone` (recommended for the demo: production build, faster and steadier), or
-   - `npm run dev:phone` (development mode, reloads when code changes).
-4. **Windows Firewall.** If Windows asks whether Node.js may communicate on networks, allow **Private networks**. If the phone cannot connect, make sure the Wi-Fi/hotspot connection is set to **Private** in Windows Settings → Network & internet.
-5. **Open it on the phone.** In Chrome, go to `http://<IPv4 address>:3000`.
-6. **Allow the microphone on that address (one time).** Phones only allow the microphone on HTTPS or `localhost`; a `http://192.168…` address is neither, and the app shows a yellow notice explaining this. In Chrome on Android:
-   - open `chrome://flags/#unsafely-treat-insecure-origin-as-secure`
-   - enter `http://<IPv4 address>:3000`, set it to **Enabled**, tap **Relaunch**
-   - reopen the app and allow the microphone when asked.
-
-   This only affects that one address on your phone. If the laptop's address changes (for example a different hotspot), add the new one.
-
-   Alternative with a USB cable (needs USB debugging turned on in the phone's Developer options): on the laptop open `chrome://inspect/#devices` → Port forwarding → `3000` → `localhost:3000`, then open `http://localhost:3000` on the phone. `localhost` is always allowed, so no flag is needed.
-
-Stop the server with Ctrl+C when you are done so the app is no longer reachable on the network.
-
-## Keys
-
-Put these in `.env.local` (ignored by Git). Next.js picks up changes automatically.
+Open http://localhost:3000. With no keys set, the app still runs and offers **View demo**.
 
 | Variable | Where to get it |
 | --- | --- |
-| `GNANI_API_KEY` | https://app.gnani.ai/voice (needs STT and TTS access) |
-| `GROQ_API_KEY` | https://console.groq.com/keys |
+| `GNANI_API_KEY` | [app.gnani.ai](https://app.gnani.ai) (needs STT and TTS access) |
+| `GROQ_API_KEY` | [console.groq.com/keys](https://console.groq.com/keys) |
+| `TRANSLATION_PROVIDER` | optional: `groq` (default) or `cerebras` (then set `CEREBRAS_API_KEY`) |
 
-`TRANSLATION_PROVIDER` picks the translator: `groq` (default) or `cerebras` (then set `CEREBRAS_API_KEY`). Optional settings are listed in `.env.example`. If the status menu says the model is unavailable on your account, set `GROQ_MODEL` (or `CEREBRAS_MODEL`).
+Other optional settings are listed in [`.env.example`](.env.example).
 
-## Status labels
+<details>
+<summary><b>Testing on a phone over local Wi-Fi</b></summary>
 
-- **LIVE:** all keys are set, the translation provider accepted its key (this check cannot see account credit), and no real call has failed this session. Gnani has no free check, so open the status menu to see whether each service has worked this session.
-- **CONFIGURATION REQUIRED:** a key is missing. The app still runs and names what is missing.
-- **API ERROR:** a key was rejected, or the latest real call to a service failed. The status menu says which.
-- **DEMO:** a hand-written sample conversation with no audio, opened with "View demo". The microphones are off while it shows.
+1. Connect the laptop and phone to the same Wi-Fi (or the phone's hotspot).
+2. Find the laptop's IPv4 address with `ipconfig`.
+3. Run `npm run phone` (production build) or `npm run dev:phone` (dev mode).
+4. Allow Node.js on **Private networks** if Windows Firewall asks.
+5. Open `http://<IPv4>:3000` in Chrome on the phone.
+6. Phones only allow the microphone on HTTPS or `localhost`. Either enable `chrome://flags/#unsafely-treat-insecure-origin-as-secure` for that address, or use USB port forwarding from `chrome://inspect/#devices` and open `http://localhost:3000`.
 
-## Where things are
+The deployed version at [voxmandi-ai.vercel.app](https://voxmandi-ai.vercel.app/) is served over HTTPS, so none of this is needed there.
 
-- `lib/pipeline.ts`: the speech → translation → speech pipeline, used for both speakers
-- `app/api/translate/route.ts`: streams each pipeline result to the browser as it is ready
-- `lib/phrases.ts` and `app/api/phrase/route.ts`: starter phrases, translated by the live provider; audio reuses `/api/translate`
-- `lib/summary.ts` and `app/api/summary/route.ts`: market notes; items whose quote is not in the conversation are dropped and unverifiable numbers are marked uncertain
-- `lib/cart/cart.ts`: the shopping cart. The same `/api/summary` request that makes market notes also reports, per turn, what the customer asked to add, change or remove and the prices the vendor gave; this file turns that into cart items and does every match, unit conversion and total deterministically (`npm test` runs its tests)
-- `lib/cart/purchase-storage.ts`: confirmed purchases, saved in this browser's localStorage
-- `lib/gnani/`: speech-to-text and text-to-speech clients
-- `lib/translation/`: provider interface, a shared OpenAI-compatible client, and the Groq and Cerebras providers; register new providers in `translate.ts`
-- `lib/audio/recording.ts`: microphone capture and conversion to the WAV format Gnani accepts
+</details>
 
-## Shopping cart and purchase history
+## Status indicator
 
-The cart fills in as the customer asks for products and the vendor gives prices; items can also be edited, removed or added by hand. Item totals and the grand total only appear when the quantity and price are known and in compatible units (kg/g, litre/ml, dozen/piece); anything missing or unclear is marked, and the customer is asked when a repeated product could mean "more" or "instead". Nothing is saved until the customer reviews the cart and taps **Confirm purchase**. VoxMandi AI never takes or records payment.
+| Label | Meaning |
+| --- | --- |
+| **LIVE** | All keys set, translation provider reachable, no real call has failed this session |
+| **CONFIGURATION REQUIRED** | A key is missing. The app names which one. |
+| **API ERROR** | A key was rejected or the latest real call failed. The menu says which service. |
+| **DEMO** | A sample conversation with the mics turned off |
 
-Purchase history is stored in the browser's localStorage. It stays on that one device and browser, is not backed up, and is lost if the browser's site data is cleared. The active cart is not stored, so it is cleared with the conversation or when the page reloads.
+## Design notes
 
-## Limits
+- **LLMs extract, code decides.** The model reports what was asked for and what prices were quoted. Matching, unit conversion and totals happen in plain TypeScript ([`lib/cart/cart.ts`](lib/cart/cart.ts)), so the bill is reproducible and tested.
+- **Ambiguity is surfaced, not guessed.** If a product comes up again, the customer is asked whether it means "more" or "instead".
+- **Privacy by default.** Purchase history lives only in the browser's localStorage, and API keys stay on the server.
+- **Recordings cap at 29 s** to stay within Gnani's 30-second REST STT limit.
 
-Recordings stop automatically at 29 seconds because Gnani's REST speech-to-text accepts up to 30. The API routes have no login or rate limit, so add both before deploying publicly: anyone who can reach them can spend your API credit.
+## Roadmap
+
+- [ ] Vendor accounts with synced sales history
+- [ ] Rate limiting and auth on the API routes
+- [ ] Gnani streaming STT for lower latency
+- [ ] Offline phrasebook for low-connectivity markets
+- [ ] UPI-ready bill sharing (QR / WhatsApp)
+
+---
+
+<div align="center">
+
+Built with **[Gnani AI](https://gnani.ai)** voice models for the **Great Indian AI Internship Challenge**
+
+`#GnaniAI` · `#GreatIndianAIInternshipChallenge`
+
+**[Try it live →](https://voxmandi-ai.vercel.app/)**
+
+</div>
