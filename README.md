@@ -23,7 +23,7 @@
 
 ## The problem
 
-India has 22 official languages, and markets are where they meet. A Kannada-speaking shopper in Bengaluru buys vegetables from a vendor who grew up speaking Hindi, a tourist in Chennai haggles over silk in English, and a migrant worker in Pune just wants to know the price of rice. People get by with gestures, half-understood numbers and overcharging. Text translation apps don't help much here: vendors are busy with their hands, many people don't read the script, and nobody types mid-bargain.
+India has 22 scheduled languages, and markets are where they meet. A Kannada-speaking shopper in Bengaluru buys vegetables from a vendor who grew up speaking Hindi, a tourist in Chennai haggles over silk in English, and a migrant worker in Pune just wants to know the price of rice. People get by with gestures, half-understood numbers and overcharging. Text translation apps don't help much here: vendors are busy with their hands, many people don't read the script, and nobody types mid-bargain.
 
 ## What VoxMandi does
 
@@ -34,7 +34,7 @@ VoxMandi turns one phone into an interpreter that sits between both people.
 3. **Vendor replies by voice**, and the customer hears the answer in Kannada.
 4. While they talk, VoxMandi **builds the bill on its own**: items, quantities, unit prices and a total, checked against what was actually said.
 
-No typing and no reading needed. Both people just talk.
+Nothing to type and nothing to read: both people just talk.
 
 ## Features
 
@@ -42,12 +42,12 @@ No typing and no reading needed. Both people just talk.
 | --- | --- |
 | 🎙️ **Two-way voice translation** | Separate mics for customer and vendor. Speech to text, translation and text to speech, streamed back as each step finishes. |
 | 🇮🇳 **10 Indian languages** | Kannada, Hindi, Tamil, Telugu, Malayalam, Marathi, Bengali, Gujarati, Punjabi and English, in any pairing. |
-| 🧾 **Smart shopping cart** | Picks up "add 2 kg onions", "make that 1 kg" and "remove the beans" from the conversation. Unit conversion (kg/g, L/ml, dozen/piece) and totals are deterministic code, not LLM guesses. |
+| 🧾 **Smart shopping cart** | Picks up "add 2 kg onions", "make that 1 kg" and "remove the beans" from the conversation, plus the vendor's prices and any price changes. Items can also be edited or added by hand. Unit conversion (kg/g, L/ml, dozen/piece) and totals are deterministic code, not LLM guesses. |
 | 🛡️ **Anti-hallucination checks** | Each extracted item must quote the conversation. Items whose quote isn't found are dropped, and numbers that can't be verified are flagged as uncertain. |
 | 📝 **Market notes** | A live summary of products, quantities and prices mentioned so far. |
 | 💬 **Market phrases** | One-tap starters like "How much does this cost?" or "Can you reduce the price?", translated live and playable without being added to the conversation. |
-| 🧑‍🤝‍🧑 **Purchase history** | Confirmed purchases are kept on the device. VoxMandi never touches payments. |
-| 📱 **Mobile-first** | Built for a phone held between two people at a stall, with a live API status indicator and a no-key demo mode. |
+| 🧑‍🤝‍🧑 **Purchase history** | After the customer reviews the cart and taps **Confirm purchase**, it's saved on that device. VoxMandi never takes or records payment. |
+| 📱 **Mobile-first** | Built for a phone held between two people at a stall, with a live API status indicator and a built-in demo conversation. |
 
 ## How it works
 
@@ -70,7 +70,7 @@ flowchart LR
 
 - **Framework:** Next.js 16 (App Router, Route Handlers), React 19, TypeScript
 - **Styling:** Tailwind CSS 4
-- **Validation:** Zod schemas on every API boundary
+- **Validation:** Zod validation on every API request
 - **AI:** Gnani STT/TTS · Groq / Cerebras (OpenAI-compatible)
 - **Audio:** in-browser microphone capture converted to the WAV format Gnani accepts
 - **Tests:** Node's built-in test runner for the cart engine (`npm test`)
@@ -104,7 +104,7 @@ cp .env.example .env.local   # then add your keys
 npm run dev
 ```
 
-Open http://localhost:3000. With no keys set, the app still runs and offers **View demo**.
+Open http://localhost:3000. Without keys the app still runs and names the missing key, and **View demo** plays a sample conversation.
 
 | Variable | Where to get it |
 | --- | --- |
